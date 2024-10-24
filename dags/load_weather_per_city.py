@@ -21,7 +21,7 @@ def return_snowflake_engine():
 
 @task
 def get_city_data():
-    query = 'select * from CAL_CITIES_LAT_LONG limit 1'
+    query = 'select * from CAL_CITIES_LAT_LONG limit 25'
     engine = return_snowflake_engine()
     cities_df = pd.read_sql(query, engine)
     return cities_df

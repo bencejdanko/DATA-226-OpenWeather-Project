@@ -1,32 +1,20 @@
-from airflow import DAG
-from airflow.models import Variable
-from airflow.decorators import task
-from airflow.providers.snowflake.hooks.snowflake import SnowflakeHook
-
 import pandas as pd
 import requests
-from datetime import datetime
-import time
-
+from airflow.decorators import task
+from airflow.models import Variable
 from sqlalchemy import create_engine
 from snowflake.sqlalchemy import URL
-from sqlalchemy import Table, Column, Integer, String, DateTime, MetaData, Float
-
 
 def return_snowflake_engine():
-
     snowflake_url = URL(
-        user= Variable.get('SNOWFLAKE_USER'),
-        password= Variable.get('SNOWFLAKE_PASSWORD'),
-        account= Variable.get('SNOWFLAKE_ACCOUNT'),
+        user=Variable.get('SNOWFLAKE_USER'),
+        password=Variable.get('SNOWFLAKE_PASSWORD'),
+        account=Variable.get('SNOWFLAKE_ACCOUNT'),
         warehouse='compute_wh',
         database='openweather',
         schema='raw_data'
     )
-
-    engine = create_engine(snowflake_url)
-    return engine
-
+    return create_engine(snowflake_url)
 
 @task
 def get_city_data():
@@ -50,18 +38,21 @@ def get_weather_data(cities_df):
         weather_json = response.json()
 
         weather_info = {
-            'City': city_name,
-            'Latitude': lat,
-            'Longitude': lon,
-            'Weather': weather_json.get('weather', [{}])[0].get('description', ''),
-            'Temperature': weather_json.get('main', {}).get('temp', None),
-            'Humidity': weather_json.get('main', {}).get('humidity', None),
-            'Wind_Speed': weather_json.get('wind', {}).get('speed', None),
-            'Timestamp': pd.Timestamp.now()
+            'city': city_name,
+            'date_time': pd.to_datetime(weather_json.get('dt', None), unit='s'),
+            'temp': weather_json.get('main', {}).get('temp', None),
+            'feels_like': weather_json.get('main', {}).get('feels_like', None),
+            'pressure': weather_json.get('main', {}).get('pressure', None),
+            'humidity': weather_json.get('main', {}).get('humidity', None),
+            'wind_speed': weather_json.get('wind', {}).get('speed', None),
+            'cloud_coverage': weather_json.get('clouds', {}).get('all', None),
+            'visibility': weather_json.get('visibility', None),
+            'weather_main': weather_json.get('weather', [{}])[0].get('main', ''),
+            'weather_det': weather_json.get('weather', [{}])[0].get('description', '')
         }
 
         weather_data.append(weather_info)
-        time.sleep(2)
+        time.sleep(1)  # To limit the API call to 1 per second
 
     weather_df = pd.DataFrame(weather_data)
     return weather_df
@@ -69,15 +60,24 @@ def get_weather_data(cities_df):
 @task
 def load_weather_data(weather_df):
     engine = return_snowflake_engine()
-    weather_df.to_sql('weather_data', con=engine, index=False, if_exists='append')
+    weather_df.to_sql('weather_fact_table', con=engine, index=False, if_exists='append')
+
+# Example DAG definition
+from airflow import DAG
+from airflow.operators.dummy import DummyOperator
+from airflow.utils.dates import days_ago
 
 with DAG(
-    start_date = datetime(2024,10,5),
-    dag_id='load_weather_per_city',
-    description='Load weather data per city to Snowflake',
+    'load_weather_per_city',
+    start_date=days_ago(1),
     schedule_interval='@hourly',
     catchup=False
 ) as dag:
+    start = DummyOperator(task_id='start')
+    end = DummyOperator(task_id='end')
+
     cities_df = get_city_data()
     weather_df = get_weather_data(cities_df)
     load_weather_data(weather_df)
+
+    start >> cities_df >> weather_df >> load_weather_data >> end

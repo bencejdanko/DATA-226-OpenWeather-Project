@@ -67,8 +67,6 @@ def load_weather_data(weather_df):
 
 # Example DAG definition
 from airflow import DAG
-from airflow.operators.dummy import DummyOperator
-from airflow.utils.dates import days_ago
 
 with DAG(
     'load_weather_per_city',
@@ -76,11 +74,9 @@ with DAG(
     schedule_interval='@hourly',
     catchup=False
 ) as dag:
-    start = DummyOperator(task_id='start')
-    end = DummyOperator(task_id='end')
 
     cities_df = get_city_data()
     weather_df = get_weather_data(cities_df)
     load_weather_data(weather_df)
 
-    start >> cities_df >> weather_df >> load_weather_data >> end
+    cities_df >> weather_df >> load_weather_data

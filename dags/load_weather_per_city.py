@@ -79,4 +79,4 @@ with DAG(
     weather_df = get_weather_data(cities_df)
     load_weather_data(weather_df)
 
-    cities_df >> weather_df >> load_weather_data
+    #cities_df >> weather_df >> load_weather_data

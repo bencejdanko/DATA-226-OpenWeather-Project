@@ -32,6 +32,7 @@ def get_weather_data(cities_df):
     weather_data = []
 
     for index, row in cities_df.iterrows():
+        city_id = row['city_id']
         city_name = row['Name']
         lat = row['Latitude']
         lon = row['Longitude']
@@ -41,7 +42,7 @@ def get_weather_data(cities_df):
         weather_json = response.json()
 
         weather_info = {
-            'city': city_name,
+            'city_id': city_id,
             'date_time': pd.to_datetime(weather_json.get('dt', None), unit='s'),
             'temp': weather_json.get('main', {}).get('temp', None),
             'feels_like': weather_json.get('main', {}).get('feels_like', None),

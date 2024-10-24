@@ -5,6 +5,9 @@ from airflow.models import Variable
 from sqlalchemy import create_engine
 from snowflake.sqlalchemy import URL
 
+import datetime
+import time
+
 def return_snowflake_engine():
     snowflake_url = URL(
         user=Variable.get('SNOWFLAKE_USER'),
@@ -69,7 +72,7 @@ from airflow.utils.dates import days_ago
 
 with DAG(
     'load_weather_per_city',
-    start_date='2024-10-24',
+    start_date= datetime.datetime(2024,10,24),
     schedule_interval='@hourly',
     catchup=False
 ) as dag:

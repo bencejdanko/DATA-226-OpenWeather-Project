@@ -69,7 +69,7 @@ from airflow.utils.dates import days_ago
 
 with DAG(
     'load_weather_per_city',
-    start_date=days_ago(1),
+    start_date='2024-10-24',
     schedule_interval='@hourly',
     catchup=False
 ) as dag:

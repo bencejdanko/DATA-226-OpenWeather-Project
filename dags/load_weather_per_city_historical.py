@@ -91,7 +91,7 @@ def load_weather_data(weather_df):
 from airflow import DAG
 
 with DAG(
-    'load_weather_per_city_incremental',
+    'load_weather_per_city_historical',
     start_date= datetime.datetime(2024,10,15),
     schedule_interval='@daily',
     catchup=False

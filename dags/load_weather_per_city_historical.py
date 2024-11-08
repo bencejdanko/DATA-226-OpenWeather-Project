@@ -33,8 +33,8 @@ def get_logical_date():
     end_date = logical_date
 
     # Convert to Unix timestamps
-    start = int(datetime.datetime.combine(start_date, datetime.datetime.min.time()).timestamp())
-    end = int(datetime.datetime.combine(end_date, datetime.datetime.min.time()).timestamp())
+    start = int(start_date.timestamp())
+    end = int(end_date.timestamp() - 1)
 
     return start, end
 
@@ -83,6 +83,7 @@ def get_weather_data(cities_df):
 
         else:
             print(f'No data found for {city_name} at {start} to {end}')
+            print(weather_json)
     weather_df = pd.DataFrame(weather_data)
     return weather_df
 

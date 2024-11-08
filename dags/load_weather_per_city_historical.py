@@ -33,8 +33,8 @@ def get_logical_date():
     end_date = logical_date
 
     # Convert to Unix timestamps
-    start = int(datetime.combine(start_date, datetime.min.time()).timestamp())
-    end = int(datetime.combine(end_date, datetime.min.time()).timestamp())
+    start = int(datetime.datetime.combine(start_date, datetime.datetime.min.time()).timestamp())
+    end = int(datetime.datetime.combine(end_date, datetime.datetime.min.time()).timestamp())
 
     return start, end
 

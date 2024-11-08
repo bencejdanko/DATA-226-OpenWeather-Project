@@ -29,8 +29,8 @@ def get_logical_date():
     logical_date = context['logical_date']
     
     # Set start and end dates for a 1 day range
-    start_date = logical_date + timedelta(days=1)
-    end_date = logical_date
+    start_date = logical_date
+    end_date = logical_date + timedelta(days=1)
 
     # Ensure start_date and end_date are datetime objects
     start_date = datetime.datetime(start_date.year, start_date.month, start_date.day, start_date.hour, start_date.minute, start_date.second)

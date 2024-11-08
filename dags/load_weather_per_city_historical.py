@@ -104,7 +104,7 @@ with DAG(
     'load_weather_per_city_historical',
     start_date= datetime.datetime(2024,10,15),
     schedule_interval='@daily',
-    catchup=False
+    catchup=True
 ) as dag:
 
     cities_df = get_city_data()

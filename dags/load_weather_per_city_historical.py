@@ -26,15 +26,19 @@ def get_logical_date():
     context = get_current_context()
     
     # Extract the logical_date (the scheduled run date)
-    logical_date = context['logical_date'].date()
+    logical_date = context['logical_date']
     
     # Set start and end dates for a 1 day range
     start_date = logical_date + timedelta(days=1)
     end_date = logical_date
 
+    # Ensure start_date and end_date are datetime objects
+    start_date = datetime(start_date.year, start_date.month, start_date.day, start_date.hour, start_date.minute, start_date.second)
+    end_date = datetime(end_date.year, end_date.month, end_date.day, end_date.hour, end_date.minute, end_date.second)
+
     # Convert to Unix timestamps
-    start = int(datetime.datetime(start_date).timestamp())
-    end = int(datetime.datetime(end_date).timestamp() - 1)
+    start = int(start_date.timestamp())
+    end = int(end_date.timestamp() - 1)
 
     return start, end
 

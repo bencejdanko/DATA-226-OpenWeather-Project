@@ -21,7 +21,7 @@ def return_snowflake_engine():
 
 @task
 def get_city_data():
-    query = 'select * from CAL_CITIES_LAT_LONG limit 25'
+    query = 'select * from CAL_CITIES_LAT_LONG'
     engine = return_snowflake_engine()
     cities_df = pd.read_sql(query, engine)
     return cities_df
@@ -50,9 +50,9 @@ def get_weather_data(cities_df):
             'humidity': weather_json.get('main', {}).get('humidity', None),
             'wind_speed': weather_json.get('wind', {}).get('speed', None),
             'cloud_coverage': weather_json.get('clouds', {}).get('all', None),
-            'visibility': weather_json.get('visibility', None),
             'weather_main': weather_json.get('weather', [{}])[0].get('main', ''),
-            'weather_det': weather_json.get('weather', [{}])[0].get('description', '')
+            'weather_det': weather_json.get('weather', [{}])[0].get('description', ''),
+            'weather_icon': weather_json.get('weather', [{}])[0].get('icon', ''),
         }
 
         weather_data.append(weather_info)
@@ -70,7 +70,7 @@ def load_weather_data(weather_df):
 from airflow import DAG
 
 with DAG(
-    'load_weather_per_city',
+    'load_weather_per_city_incremental',
     start_date= datetime.datetime(2024,10,24),
     schedule_interval='@hourly',
     catchup=False

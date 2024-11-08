@@ -6,7 +6,8 @@ from sqlalchemy import create_engine
 from snowflake.sqlalchemy import URL
 from airflow.operators.python import get_current_context
 
-import datetime, timedelta
+import datetime
+from datetime import timedelta
 import time
 
 def return_snowflake_engine():

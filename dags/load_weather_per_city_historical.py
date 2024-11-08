@@ -88,6 +88,7 @@ def get_weather_data(cities_df):
         else:
             print(f'No data found for {city_name} at {start} to {end}')
             print(weather_json)
+            break
     weather_df = pd.DataFrame(weather_data)
     return weather_df
 

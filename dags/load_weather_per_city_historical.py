@@ -63,23 +63,26 @@ def get_weather_data(cities_df):
         response = requests.get(url)
         weather_json = response.json()
 
-        for record in weather_json['list']:
-            weather_info = {
-                'city_id': city_id,
-                'date_time': pd.to_datetime(record['dt'], unit='s'),
-                'temp': record['main']['temp'],
-                'feels_like': record['main']['feels_like'],
-                'pressure': record['main']['pressure'],
-                'humidity': record['main']['humidity'],
-                'wind_speed': record['wind']['speed'],
-                'cloud_coverage': record['clouds']['all'],
-                'weather_main': record['weather'][0]['main'],
-                'weather_det': record['weather'][0]['description']
-            }
+        if 'list' in weather_json and weather_json['list']:
+            for record in weather_json['list']:
+                weather_info = {
+                    'city_id': city_id,
+                    'date_time': pd.to_datetime(record['dt'], unit='s'),
+                    'temp': record['main']['temp'],
+                    'feels_like': record['main']['feels_like'],
+                    'pressure': record['main']['pressure'],
+                    'humidity': record['main']['humidity'],
+                    'wind_speed': record['wind']['speed'],
+                    'cloud_coverage': record['clouds']['all'],
+                    'weather_main': record['weather'][0]['main'],
+                    'weather_det': record['weather'][0]['description']
+                }
 
-            weather_data.append(weather_info)
-            time.sleep(1)  # To limit the API call to 1 per second
+                weather_data.append(weather_info)
+                time.sleep(1)  # To limit the API call to 1 per second
 
+        else:
+            print(f'No data found for {city_name} at {start} to {end}')
     weather_df = pd.DataFrame(weather_data)
     return weather_df
 

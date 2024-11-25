@@ -44,7 +44,7 @@ def get_logical_date():
 
 @task
 def get_city_data():
-    query = 'select * from CAL_CITIES_LAT_LONG'
+    query = 'select * from CITY_DIMENSION_TABLE'
     engine = return_snowflake_engine()
     cities_df = pd.read_sql(query, engine)
     return cities_df
@@ -63,7 +63,7 @@ def get_weather_data(cities_df):
         start, end = get_logical_date()
 
         url = f'https://history.openweathermap.org/data/2.5/history/city?lat={lat}&lon={lon}&type=hour&start={start}&end={end}&appid={key}'
-        time.sleep(1)  # To limit the API call to 1 per second
+        time.sleep(0.2)  # To limit the API call to 1 per second
         response = requests.get(url)
         weather_json = response.json()
 
@@ -94,14 +94,23 @@ def get_weather_data(cities_df):
 @task
 def load_weather_data(weather_df):
     engine = return_snowflake_engine()
-    weather_df.to_sql('weather_fact_table', con=engine, index=False, if_exists='append')
+    connection = engine.connect()
+    transaction = connection.begin()
+    try:
+        weather_df.to_sql('weather_fact_table', con=connection, index=False, if_exists='append')
+        transaction.commit()
+    except Exception as e:
+        transaction.rollback()
+        print(f"Error occurred: {e}")
+    finally:
+        connection.close()
 
 # Example DAG definition
 from airflow import DAG
 
 with DAG(
     'load_weather_per_city_historical',
-    start_date= datetime.datetime(2024,10,15),
+    start_date= datetime.datetime(2024,11,11),
     schedule_interval='@daily',
     catchup=True
 ) as dag:

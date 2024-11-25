@@ -21,7 +21,7 @@ def return_snowflake_engine():
 
 @task
 def get_city_data():
-    query = 'select * from CAL_CITIES_LAT_LONG'
+    query = 'select * from CITY_DIMENSION_TABLE'
     engine = return_snowflake_engine()
     cities_df = pd.read_sql(query, engine)
     return cities_df
@@ -51,12 +51,11 @@ def get_weather_data(cities_df):
             'wind_speed': weather_json.get('wind', {}).get('speed', None),
             'cloud_coverage': weather_json.get('clouds', {}).get('all', None),
             'weather_main': weather_json.get('weather', [{}])[0].get('main', ''),
-            'weather_det': weather_json.get('weather', [{}])[0].get('description', ''),
-            'weather_icon': weather_json.get('weather', [{}])[0].get('icon', ''),
+            'weather_det': weather_json.get('weather', [{}])[0].get('description', '')
         }
 
         weather_data.append(weather_info)
-        time.sleep(1)  # To limit the API call to 1 per second
+        time.sleep(0.2)  # To limit the API call to 1 per second
 
     weather_df = pd.DataFrame(weather_data)
     return weather_df
@@ -70,7 +69,7 @@ def load_weather_data(weather_df):
 from airflow import DAG
 
 with DAG(
-    'load_weather_per_city_incremental',
+    'load_weather_per_city_realtime',
     start_date= datetime.datetime(2024,10,24),
     schedule_interval='@hourly',
     catchup=False
@@ -79,5 +78,3 @@ with DAG(
     cities_df = get_city_data()
     weather_df = get_weather_data(cities_df)
     load_weather_data(weather_df)
-
-    #cities_df >> weather_df >> load_weather_data

@@ -63,15 +63,25 @@ def get_weather_data(cities_df):
 @task
 def load_weather_data(weather_df):
     engine = return_snowflake_engine()
-    weather_df.to_sql('weather_fact_table', con=engine, index=False, if_exists='append')
+    connection = engine.connect()
+    try:
+        transaction = connection.begin()    # Start Transaction (Similar to BEGIN)
+        weather_df.to_sql('weather_realtime_table', con=connection, index=False, if_exists='replace')
+        transaction.commit()    # Commit Transaction (Similar to COMMIT)
+    except Exception as e:
+        transaction.rollback()
+        print(f"Error occurred: {e}")
+    finally:
+        connection.close()      # Close the connection
 
 # Example DAG definition
 from airflow import DAG
 
 with DAG(
     'load_weather_per_city_realtime',
-    start_date= datetime.datetime(2024,10,24),
+    start_date= datetime.datetime(2024,8,1),
     schedule_interval='@hourly',
+    tags=['ETL', 'RealTime'],
     catchup=False
 ) as dag:
 

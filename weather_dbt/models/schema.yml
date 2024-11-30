@@ -4,22 +4,16 @@ models:
   - name: extreme_weather_events
     description: "A model that identifies extreme weather events (heat, cold, or wind) across different cities."
     columns:
-      - name: city_id
-        tests:
-          - not_null
       - name: city_name
         tests:
           - not_null
-      - name: date_time
+      - name: day
         tests:
           - not_null
-      - name: temp_fahrenheit
+      - name: avg_temp_fahrenheit
         tests:
           - not_null
-      - name: wind_speed
-        tests:
-          - not_null
-      - name: weather_alert
+      - name: avg_wind_speed
         tests:
           - not_null
 

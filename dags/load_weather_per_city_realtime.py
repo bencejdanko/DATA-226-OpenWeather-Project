@@ -79,7 +79,7 @@ from airflow import DAG
 
 with DAG(
     'load_weather_per_city_realtime',
-    start_date= datetime.datetime(2024,8,1),
+    start_date= datetime.datetime(2024,9,1),
     schedule_interval='@hourly',
     tags=['ETL', 'RealTime'],
     catchup=False

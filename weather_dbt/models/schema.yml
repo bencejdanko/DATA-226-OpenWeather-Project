@@ -5,15 +5,19 @@ models:
     description: "A model that identifies extreme weather events (heat, cold, or wind) across different cities."
     columns:
       - name: city_name
+        description: "The name of the city."
         tests:
           - not_null
       - name: day
+        description: "The date (truncated from date_time) for each weather record."
         tests:
           - not_null
       - name: avg_temp_fahrenheit
+        description: "The average temperature in Fahrenheit for the day."
         tests:
           - not_null
       - name: avg_wind_speed
+        description: "The average wind speed for the day."
         tests:
           - not_null
 
@@ -42,19 +46,6 @@ models:
         tests:
           - not_null
       - name: day
-        tests:
-          - not_null
-
-  - name: weather_cond_distribution
-    description: "A model that highlights overall weather conditions."
-    columns:
-      - name: weather_main
-        tests:
-          - not_null
-      - name: count
-        tests:
-          - not_null
-      - name: city_name
         tests:
           - not_null
 

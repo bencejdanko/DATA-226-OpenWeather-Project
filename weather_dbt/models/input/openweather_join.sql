@@ -1,3 +1,4 @@
+-- full join city and weather table to display all columns from both tables
 SELECT
     w.CITY_ID,
     c."Name" AS CITY_NAME,

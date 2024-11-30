@@ -1,12 +1,12 @@
 -- This test checks for consistency in the weather alerts generated in the extreme_weather_events table.
 SELECT
-    CITY_ID,
-    DATE_TIME,
+    CITY_NAME,
+    DAY,
     WEATHER_ALERT,
-    TEMP_FAHRENHEIT,
-    WIND_SPEED
+    AVG_TEMP_FAHRENHEIT,
+    AVG_WIND_SPEED
 FROM {{ ref('extreme_weather_events') }}
 WHERE 
-    (WEATHER_ALERT = 'Extreme Heat' AND TEMP_FAHRENHEIT <= 100)
-    OR (WEATHER_ALERT = 'Extreme Cold' AND TEMP_FAHRENHEIT >= 32)
-    OR (WEATHER_ALERT = 'High Winds' AND WIND_SPEED <= 20)
+    (WEATHER_ALERT = 'Extreme Heat' AND AVG_TEMP_FAHRENHEIT <= 100)
+    OR (WEATHER_ALERT = 'Extreme Cold' AND AVG_TEMP_FAHRENHEIT >= 32)
+    OR (WEATHER_ALERT = 'High Winds' AND AVG_WIND_SPEED <= 20)

@@ -5,8 +5,8 @@ SELECT
     c."Latitude" AS CITY_LATITUDE,
     c."Longitude" AS CITY_LONGITUDE,
     w.DATE_TIME,
-    ((w.TEMP - 273.15) * 9/5 + 32) AS TEMP_FAHRENHEIT,
-    ((w.FEELS_LIKE - 273.15) * 9/5 + 32) AS FEELS_LIKE_FAHRENHEIT,
+    ((w.TEMP - 273.15) * 9/5 + 32) AS TEMP_FAHRENHEIT, -- converting Kelvin to Fahrenheit
+    ((w.FEELS_LIKE - 273.15) * 9/5 + 32) AS FEELS_LIKE_FAHRENHEIT, -- converting K to F
     w.PRESSURE,
     w.HUMIDITY,
     w.WIND_SPEED,

@@ -10,3 +10,5 @@ sources:
         description: "Table containing weather data for different cities, including temperature, humidity, wind speed, and etc."
       - name: CITY_DIMENSION_TABLE
         description: "Table containing details of cities, such as city ID, name, and geographical location"
+      - name: WEATHER_REALTIME_TABLE
+        description: "Table containing real-time weather data for different cities, including temperature, humidity, wind speed, and etc."

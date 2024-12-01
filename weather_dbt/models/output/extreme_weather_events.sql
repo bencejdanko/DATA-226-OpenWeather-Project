@@ -1,3 +1,4 @@
+-- transforms raw data to display daily weather events
 WITH extreme_weather_events AS (
     SELECT
         w.CITY_ID,
@@ -24,7 +25,6 @@ Daily_Weather AS (
         DAY,
         AVG(TEMP_FAHRENHEIT) AS AVG_TEMP_FAHRENHEIT,
         AVG(WIND_SPEED) AS AVG_WIND_SPEED,
-        -- Classify weather based on the daily average of temperature
         CASE
             WHEN AVG(TEMP_FAHRENHEIT) > 85 THEN 'Hot Day'
             WHEN AVG(TEMP_FAHRENHEIT) < 59 THEN 'Cold Day'
@@ -37,7 +37,6 @@ Daily_Weather AS (
         CITY_NAME,
         DAY
 )
--- Final Output
 SELECT
     CITY_NAME,
     DAY,

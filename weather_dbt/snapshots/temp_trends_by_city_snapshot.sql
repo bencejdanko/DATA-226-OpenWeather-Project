@@ -12,7 +12,7 @@
 
 WITH TempTrends AS (
     SELECT 
-        "Name" AS CITY_NAME,
+        c.city_name AS CITY_NAME,
         DATE_TRUNC('DAY', w.DATE_TIME) AS DAY,
         AVG(((w.TEMP - 273.15) * 9/5 + 32)) AS AVG_TEMP_FAHRENHEIT
     FROM

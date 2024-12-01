@@ -25,7 +25,9 @@ Configuration file for setting up Docker containers for the project.
 Folder for dbt models and configurations:
 - **`models/`**: 
   - **`input/`**:
-    - `openweather_join.sql`: SQL for joining raw OpenWeather data.
+    - `openweather_join.sql`: SQL for joining raw OpenWeather Historical data.
+    - `realtime_weather_join.sql`: SQL for joining raw OpenWeather Realtime data.
+
   - **`output/`**:
     - `cloud_coverage_over_time.sql`: Analyzes cloud coverage trends.
     - `correlation.sql`: Examines correlations between weather variables.

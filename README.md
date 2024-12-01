@@ -4,9 +4,9 @@
 
 ### `dags/`
 Contains Apache Airflow DAGs for data extraction and processing:
+- **`load_weather_per_city_historical.py`**: Loads historical weather data per city (ETL).
+- **`load_weather_per_city_realtime.py`**: Loads real-time weather data per city (ETL).
 - **`build_elt_with_dbt.py`**: Implements ELT processes using dbt.
-- **`load_weather_per_city_historical.py`**: Loads historical weather data per city.
-- **`load_weather_per_city_realtime.py`**: Loads real-time weather data per city.
 
 ### `scripts/`
 Includes Python scripts and related resources:

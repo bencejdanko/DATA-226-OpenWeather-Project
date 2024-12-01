@@ -1,6 +1,6 @@
 WITH CloudCoverage AS (
     SELECT 
-        c."Name" AS CITY_NAME,
+        c.city_name AS CITY_NAME,
         DATE_TRUNC('DAY', w.DATE_TIME) AS DAY,
         AVG(w.CLOUD_COVERAGE) AS AVG_CLOUD_COVERAGE
     FROM

@@ -13,7 +13,7 @@
 WITH WindSpeedData AS (
     SELECT 
         w.WIND_SPEED,
-        c."Name" AS CITY_NAME,
+        c.city_name AS CITY_NAME,
         w.DATE_TIME,
         DATE_TRUNC('DAY', w.DATE_TIME) AS DAY
     FROM

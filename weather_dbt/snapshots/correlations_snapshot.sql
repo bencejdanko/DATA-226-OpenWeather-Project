@@ -12,7 +12,7 @@
 
 WITH CorrelationData AS (
     SELECT 
-        c."Name" AS CITY_NAME,
+        c.city_name AS CITY_NAME,
         AVG(((w.TEMP - 273.15) * 9/5 + 32)) AS AVG_TEMP,
         AVG(w.HUMIDITY) AS AVG_HUMIDITY,
         AVG(w.PRESSURE) AS AVG_PRESSURE,

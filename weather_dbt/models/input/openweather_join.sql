@@ -1,12 +1,11 @@
--- full join city and weather table to display all columns from both tables
 SELECT
     w.CITY_ID,
-    c."Name" AS CITY_NAME,
-    c."Latitude" AS CITY_LATITUDE,
-    c."Longitude" AS CITY_LONGITUDE,
+    c.city_name AS CITY_NAME,
+    c.Lat AS CITY_LATITUDE,
+    c.Lon AS CITY_LONGITUDE,
     w.DATE_TIME,
-    ((w.TEMP - 273.15) * 9/5 + 32) AS TEMP_FAHRENHEIT, -- converting Kelvin to Fahrenheit
-    ((w.FEELS_LIKE - 273.15) * 9/5 + 32) AS FEELS_LIKE_FAHRENHEIT, -- converting K to F
+    ((w.TEMP - 273.15) * 9/5 + 32) AS TEMP_FAHRENHEIT,
+    ((w.FEELS_LIKE - 273.15) * 9/5 + 32) AS FEELS_LIKE_FAHRENHEIT,
     w.PRESSURE,
     w.HUMIDITY,
     w.WIND_SPEED,

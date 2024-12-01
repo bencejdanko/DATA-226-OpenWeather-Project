@@ -1,3 +1,4 @@
+#importing necessary libraries
 from airflow import DAG
 from airflow.decorators import task
 from airflow.models import Variable
@@ -8,6 +9,7 @@ import requests
 import pandas as pd
 import time
 
+#snowflake conn function
 def return_snowflake_engine():
     snowflake_url = URL(
         user=Variable.get('SNOWFLAKE_USER'),
@@ -19,6 +21,7 @@ def return_snowflake_engine():
     )
     return create_engine(snowflake_url)
 
+#defining dag dependicies
 with DAG(
     dag_id="historical_weather_etl_v3",
     start_date=datetime(2024, 11, 30),
@@ -124,7 +127,7 @@ with DAG(
         engine = return_snowflake_engine()
 
         with engine.connect() as conn:
-            transaction = conn.begin()
+            transaction = conn.begin() #begin sql transcation
             try:
                 conn.execute("""
                     CREATE TABLE IF NOT EXISTS weather_info (
@@ -149,10 +152,10 @@ with DAG(
                     if_exists="append",
                     index=False
                 )
-                transaction.commit()
+                transaction.commit() #commiting if success
                 print("Data loaded successfully into Snowflake.")
             except Exception as e:
-                transaction.rollback()
+                transaction.rollback() #rollback to prev state if failed for any reason
                 print(f"Error occurred while loading data to Snowflake: {e}")
 
     cities = fetch_california_cities()

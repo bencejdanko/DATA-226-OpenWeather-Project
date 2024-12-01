@@ -1,7 +1,7 @@
 WITH Extreme_Weather_Events AS (
     SELECT
         w.CITY_ID,
-        c."Name" AS CITY_NAME,
+        c.city_name AS CITY_NAME,
         w.DATE_TIME,
         ((w.TEMP - 273.15) * 9/5 + 32) AS TEMP_FAHRENHEIT,
         w.WIND_SPEED,

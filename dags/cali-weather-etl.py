@@ -1,4 +1,3 @@
-#importing necessary libraries
 from airflow import DAG
 from airflow.decorators import task
 from airflow.models import Variable
@@ -9,19 +8,17 @@ import requests
 import pandas as pd
 import time
 
-#snowflake conn function
 def return_snowflake_engine():
     snowflake_url = URL(
         user=Variable.get('SNOWFLAKE_USER'),
         password=Variable.get('SNOWFLAKE_PASSWORD'),
         account=Variable.get('SNOWFLAKE_ACCOUNT'),
         warehouse='compute_wh',
-        database='openweather',
+        database='weather',
         schema='raw_data'
     )
     return create_engine(snowflake_url)
 
-#defining dag dependicies
 with DAG(
     dag_id="historical_weather_etl_v3",
     start_date=datetime(2024, 11, 30),
@@ -60,7 +57,7 @@ with DAG(
             {"city_id": 20, "name": "Oceanside", "lat": 33.1959, "lon": -117.3795},
         ]
 
-        # Combine all cities, removing duplicates if any
+        # Combining all cities
         all_cities = {city["name"]: city for city in (northern_california_cities + southern_california_cities)}
         unique_cities = list(all_cities.values())
 
@@ -117,7 +114,8 @@ with DAG(
         return historical_data
 
     @task()
-    def load_data_to_snowflake(historical_data):
+    def load_data_to_snowflake(historical_data, cities):
+        # converting historical data to DataFrame
         df = pd.DataFrame(historical_data)
 
         if df.empty:
@@ -127,12 +125,12 @@ with DAG(
         engine = return_snowflake_engine()
 
         with engine.connect() as conn:
-            transaction = conn.begin() #begin sql transcation
+            transaction = conn.begin()
             try:
+                # Create weather_fact_table and city_dim_table tables
                 conn.execute("""
-                    CREATE TABLE IF NOT EXISTS weather_info (
+                    CREATE TABLE IF NOT EXISTS weather_fact_table (
                         city_id INTEGER,
-                        city_name STRING,
                         date_time TIMESTAMP,
                         temp FLOAT,
                         feels_like FLOAT,
@@ -145,19 +143,43 @@ with DAG(
                     );
                 """)
 
-                df.to_sql(
-                    "weather_info",
-                    con=conn,
-                    schema="raw_data",
-                    if_exists="append",
-                    index=False
-                )
-                transaction.commit() #commiting if success
+                conn.execute("""
+                    CREATE TABLE IF NOT EXISTS city_dimension_table (
+                        city_id INTEGER PRIMARY KEY,
+                        city_name STRING,
+                        lat FLOAT,
+                        lon FLOAT
+                    );
+                """)
+
+                # Insert city data into city_info table
+                city_data = [(city['city_id'], city['name'], city['lat'], city['lon']) for city in cities]
+                conn.execute("""
+                    INSERT INTO city_dimension_table (city_id, city_name, lat, lon) 
+                    VALUES (%s, %s, %s, %s)
+                """, city_data)
+
+                # Insert weather data into weather_fact_table
+                weather_data = [(row['city_id'], row['date_time'], row['temp'], row['feels_like'],
+                                 row['pressure'], row['humidity'], row['wind_speed'], row['cloud_coverage'],
+                                 row['weather_main'], row['weather_det']) for _, row in df.iterrows()]
+
+                batch_size = 1000
+                for start in range(0, len(weather_data), batch_size):
+                    batch = weather_data[start:start + batch_size]
+                    conn.execute("""
+                        INSERT INTO weather_fact_table 
+                        (city_id, date_time, temp, feels_like, pressure, humidity, wind_speed, 
+                         cloud_coverage, weather_main, weather_det) 
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    """, batch)
+
+                transaction.commit()
                 print("Data loaded successfully into Snowflake.")
             except Exception as e:
-                transaction.rollback() #rollback to prev state if failed for any reason
+                transaction.rollback()
                 print(f"Error occurred while loading data to Snowflake: {e}")
 
     cities = fetch_california_cities()
     historical_data = extract_historical_weather_data(cities)
-    load_data_to_snowflake(historical_data)
+    load_data_to_snowflake(historical_data, cities)

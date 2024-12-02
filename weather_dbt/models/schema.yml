@@ -1,0 +1,95 @@
+version: 2
+
+models:
+  - name: extreme_weather_events
+    description: "A model that identifies extreme weather events (heat, cold, or wind) across different cities."
+    columns:
+      - name: city_name
+        description: "The name of the city."
+        tests:
+          - not_null
+      - name: day
+        description: "The date (truncated from date_time) for each weather record."
+        tests:
+          - not_null
+      - name: avg_temp_fahrenheit
+        description: "The average temperature in Fahrenheit for the day."
+        tests:
+          - not_null
+      - name: avg_wind_speed
+        description: "The average wind speed for the day."
+        tests:
+          - not_null
+
+  - name: temp_trends_by_city
+    columns:
+      - name: city_name
+        tests:
+          - not_null
+      - name: day
+        tests:
+          - not_null
+      - name: avg_temp_fahrenheit
+        tests:
+          - not_null
+
+  - name: humidity_vs_temp
+    description: "A model that explores the relationship between humidity and temp."
+    columns:
+      - name: avg_temp_fahrenheit
+        tests:
+          - not_null
+      - name: avg_humidity
+        tests:
+          - not_null
+      - name: city_name
+        tests:
+          - not_null
+      - name: day
+        tests:
+          - not_null
+
+  - name: wind_speed_analysis
+    description: "A model that analyzes wind speed across cities and their intensity."
+    columns:
+      - name: avg_wind_speed
+        tests:
+          - not_null
+      - name: city_name
+        tests:
+          - not_null
+      - name: day
+        tests:
+          - not_null
+
+  - name: cloud_coverage_over_time
+    description: "A model that shows trends in cloud coverage over time in cities and across regions."
+    columns:
+      - name: city_name
+        tests:
+          - not_null
+      - name: day
+        tests:
+          - not_null
+      - name: avg_cloud_coverage
+        tests:
+          - not_null
+
+  - name: correlation
+    description: "A model that explores the correlation between different weather metrics."
+    columns:
+      - name: city_name
+        tests:
+          - not_null
+      - name: avg_temp
+        tests:
+          - not_null
+      - name: avg_humidity
+        tests:
+          - not_null
+      - name: avg_pressure
+        tests:
+          - not_null
+      - name: avg_wind_speed
+        tests:
+          - not_null

@@ -41,14 +41,9 @@ with DAG(
         bash_command=f"/home/airflow/.local/bin/dbt snapshot --profiles-dir {DBT_PROJECT_DIR} --project-dir {DBT_PROJECT_DIR}",
     )
 
-    dbt_docs = BashOperator(
-        task_id="dbt_docs",
-        bash_command=f"/home/airflow/.local/bin/dbt docs generate --profiles-dir {DBT_PROJECT_DIR} --project-dir {DBT_PROJECT_DIR}",
-    )
-
     # print_env_var = BashOperator(
     #    task_id='print_aa_variable',
     #    bash_command='echo "The value of AA is: $DBT_ACCOUNT,$DBT_ROLE,$DBT_DATABASE,$DBT_WAREHOUSE,$DBT_USER,$DBT_TYPE,$DBT_SCHEMA"'
     # )
 
-    dbt_run >> dbt_test >> dbt_snapshot >> dbt_docs
+    dbt_run >> dbt_test >> dbt_snapshot

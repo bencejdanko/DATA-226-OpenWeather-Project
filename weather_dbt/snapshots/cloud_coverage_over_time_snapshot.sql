@@ -10,18 +10,6 @@
   )
 }}
 
-WITH CloudCoverage AS (
-    SELECT 
-        w.CITY_NAME,
-        DATE_TRUNC('DAY', w.DATE_TIME) AS DAY,
-        AVG(w.CLOUD_COVERAGE) AS AVG_CLOUD_COVERAGE
-    FROM
-        {{ ref('openweather_join') }} w
-    GROUP BY 
-        w.CITY_NAME, DATE_TRUNC('DAY', w.DATE_TIME)
-)
-SELECT *
-FROM CloudCoverage
-ORDER BY DAY
+SELECT * FROM {{ ref('cloud_coverage_over_time') }}
 
 {% endsnapshot %}

@@ -17,13 +17,16 @@ def return_snowflake_conn():
 # Task to fetch city data from Snowflake
 @task
 def get_city_data():
-    query = 'SELECT * FROM CITY_DIMENSION_TABLE'
+    query = 'SELECT * FROM OPENWEATHER.RAW_DATA.CITY_DIMENSION_TABLE'
     cursor = return_snowflake_conn()
-    
     cursor.execute(query)
     data = cursor.fetchall()
     columns = [col[0] for col in cursor.description]
     cities_df = pd.DataFrame(data, columns=columns)
+    
+    # Normalizing column names to lowercase
+    cities_df.columns = cities_df.columns.str.lower()
+    print("Retrieved columns:", cities_df.columns)
     
     return cities_df
 
@@ -31,14 +34,14 @@ def get_city_data():
 # Task to fetch weather data from OpenWeather API
 @task
 def get_weather_data(cities_df):
-    key = Variable.get('OPENWEATHER_API_KEY')
+    key = Variable.get('weather_api_key')
     weather_data = []
 
     for _, row in cities_df.iterrows():
         city_id = row['city_id']
-        city_name = row['Name']
-        lat = row['Latitude']
-        lon = row['Longitude']
+        city_name = row['name']
+        lat = row['latitude']
+        lon = row['longitude']
 
         url = f'https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&APPID={key}'
         response = requests.get(url)

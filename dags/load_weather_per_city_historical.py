@@ -38,20 +38,24 @@ def get_city_data():
     columns = [col[0] for col in cursor.description]
     cities_df = pd.DataFrame(data, columns=columns)
     
+    # Normalize column names to lowercase
+    cities_df.columns = cities_df.columns.str.lower()
+    
+    print("City Data Columns:", cities_df.columns)  # Debugging
     return cities_df
 
 
 # Task to fetch weather data from OpenWeather API
 @task
 def get_weather_data(cities_df):
-    key = Variable.get('OPENWEATHER_API_KEY')
+    key = Variable.get('weather_api_key')
     weather_data = []
 
     for index, row in cities_df.iterrows():
         city_id = row['city_id']
-        city_name = row['Name']
-        lat = row['Latitude']
-        lon = row['Longitude']
+        city_name = row['name']
+        lat = row['latitude']
+        lon = row['longitude']
 
         start, end = get_logical_date()
 

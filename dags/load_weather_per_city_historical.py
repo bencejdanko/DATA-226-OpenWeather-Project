@@ -1,54 +1,47 @@
-import pandas as pd
-import requests
+from airflow.providers.snowflake.hooks.snowflake import SnowflakeHook
 from airflow.decorators import task
 from airflow.models import Variable
-from sqlalchemy import create_engine
-from snowflake.sqlalchemy import URL
 from airflow.operators.python import get_current_context
 
+import pandas as pd
+import requests
 import datetime
 from datetime import timedelta
 import time
 
-def return_snowflake_engine():
-    snowflake_url = URL(
-        user=Variable.get('SNOWFLAKE_USER'),
-        password=Variable.get('SNOWFLAKE_PASSWORD'),
-        account=Variable.get('SNOWFLAKE_ACCOUNT'),
-        warehouse='compute_wh',
-        database='openweather',
-        schema='raw_data'
-    )
-    return create_engine(snowflake_url)
 
+# Function to return a Snowflake cursor
+def return_snowflake_conn():
+    hook = SnowflakeHook(snowflake_conn_id='snowflake_conn')  # Use the Airflow connection ID
+    return hook.get_conn().cursor()
+
+
+# Function to calculate logical date range
 def get_logical_date():
-    # Get the current Airflow context
     context = get_current_context()
-    
-    # Extract the logical_date (the scheduled run date)
     logical_date = context['logical_date']
-    
-    # Set start and end dates for a 1 day range
     start_date = logical_date
     end_date = logical_date + timedelta(days=1)
-
-    # Ensure start_date and end_date are datetime objects
-    start_date = datetime.datetime(start_date.year, start_date.month, start_date.day, start_date.hour, start_date.minute, start_date.second)
-    end_date = datetime.datetime(end_date.year, end_date.month, end_date.day, end_date.hour, end_date.minute, end_date.second)
-
-    # Convert to Unix timestamps
-    start = int(start_date.timestamp())
-    end = int(end_date.timestamp() - 1)
-
+    start = int(datetime.datetime(start_date.year, start_date.month, start_date.day).timestamp())
+    end = int(datetime.datetime(end_date.year, end_date.month, end_date.day).timestamp()) - 1
     return start, end
 
+
+# Task to fetch city data from Snowflake
 @task
 def get_city_data():
-    query = 'select * from CITY_DIMENSION_TABLE'
-    engine = return_snowflake_engine()
-    cities_df = pd.read_sql(query, engine)
+    query = 'SELECT * FROM CITY_DIMENSION_TABLE'
+    cursor = return_snowflake_conn()
+
+    cursor.execute(query)
+    data = cursor.fetchall()
+    columns = [col[0] for col in cursor.description]
+    cities_df = pd.DataFrame(data, columns=columns)
+    
     return cities_df
 
+
+# Task to fetch weather data from OpenWeather API
 @task
 def get_weather_data(cities_df):
     key = Variable.get('OPENWEATHER_API_KEY')
@@ -63,7 +56,7 @@ def get_weather_data(cities_df):
         start, end = get_logical_date()
 
         url = f'https://history.openweathermap.org/data/2.5/history/city?lat={lat}&lon={lon}&type=hour&start={start}&end={end}&appid={key}'
-        time.sleep(0.2)  # To limit the API call to 1 per second
+        time.sleep(0.2)  # Limit the API calls to 1 per second
         response = requests.get(url)
         weather_json = response.json()
 
@@ -81,36 +74,59 @@ def get_weather_data(cities_df):
                     'weather_main': record['weather'][0]['main'],
                     'weather_det': record['weather'][0]['description']
                 }
-
                 weather_data.append(weather_info)
-
         else:
-            print(f'No data found for {city_name} at {start} to {end}')
+            print(f"No data found for {city_name} at {start} to {end}")
             print(weather_json)
             break
+
     weather_df = pd.DataFrame(weather_data)
     return weather_df
 
+
+# Task to load weather data into Snowflake
 @task
 def load_weather_data(weather_df):
-    engine = return_snowflake_engine()
-    connection = engine.connect()
+    cursor = return_snowflake_conn()
+
     try:
-        transaction = connection.begin()    # Start Transaction (Similar to BEGIN)
-        weather_df.to_sql('weather_fact_table', con=connection, index=False, if_exists='append')
-        transaction.commit()    # Commit Transaction (Similar to COMMIT)
+        # Begin transaction
+        cursor.execute("BEGIN")
+        
+        # Insert data into Snowflake
+        for _, row in weather_df.iterrows():
+            insert_query = f"""
+                INSERT INTO weather_fact_table (city_id, date_time, temp, feels_like, pressure, humidity, wind_speed, cloud_coverage, weather_main, weather_det)
+                VALUES (
+                    '{row['city_id']}',
+                    '{row['date_time']}',
+                    {row['temp']},
+                    {row['feels_like']},
+                    {row['pressure']},
+                    {row['humidity']},
+                    {row['wind_speed']},
+                    {row['cloud_coverage']},
+                    '{row['weather_main']}',
+                    '{row['weather_det']}'
+                )
+            """
+            cursor.execute(insert_query)
+        
+        # Commit transaction
+        cursor.execute("COMMIT")
     except Exception as e:
-        transaction.rollback()
+        cursor.execute("ROLLBACK")
         print(f"Error occurred: {e}")
     finally:
-        connection.close()  # Close the connection
+        cursor.close()
 
-# Example DAG definition
+
+# DAG Definition
 from airflow import DAG
 
 with DAG(
     'load_weather_per_city_historical',
-    start_date= datetime.datetime(2024,9,1),
+    start_date=datetime.datetime(2024, 9, 1),
     schedule_interval='@daily',
     tags=['ETL', 'Historical'],
     catchup=True

@@ -34,7 +34,7 @@ def get_city_data():
 # Task to fetch weather data from OpenWeather API
 @task
 def get_weather_data(cities_df):
-    key = Variable.get('weather_api_key')
+    key = Variable.get('openweather_api_key')
     weather_data = []
 
     for _, row in cities_df.iterrows():

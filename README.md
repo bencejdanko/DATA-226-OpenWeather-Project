@@ -1,5 +1,7 @@
 # DATA-226-OpenWeather-Project
 
+A data pipeline project that utilizes Apache Airflow and dbt to extract, transform, and analyze weather data from OpenWeather API. It enables historical and real-time weather data processing and performs analytical transformations for insights into weather patterns.
+
 ## Project Directory Structure
 
 ### `dags/`
